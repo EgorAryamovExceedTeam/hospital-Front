@@ -12,7 +12,6 @@ const Login = () => {
   const [passwordErr, setPasswordErr] = useState(false);
 
   const handlerSubmit = async (e) => {
-    console.log("something");
     e.preventDefault();
     const formData = new FormData(e.target);
     // test states before send data
@@ -26,8 +25,7 @@ const Login = () => {
             password: formData.get("password"),
           })
           .then((result) => {
-            localStorage.clear();
-            localStorage.setItem("taken", JSON.stringify(result.data.token));
+            localStorage.setItem("token", result.data.token);
             // redirect to home page
             history.push("/home");
           });
