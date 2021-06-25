@@ -9,7 +9,6 @@ import Select from "@material-ui/core/Select";
 import DateFnsUtils from "@date-io/date-fns";
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
 import moment from "moment";
@@ -19,31 +18,28 @@ const NoteBar = ({ setNotes }) => {
   const [doctor, setDoctor] = useState("");
   const [date, setDate] = useState(new Date());
   const [complaint, setComplaint] = useState("");
-  const [correct, setCorrect] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (correct) {
-      await axios
-        .post(
-          "http://localhost:8000/addNewNote",
-          {
-            name: name,
-            doctor: doctor,
-            date: moment(date).format("DD.MM.YYYY"),
-            complaint: complaint,
+    await axios
+      .post(
+        "http://localhost:8000/addNewNote",
+        {
+          name: name,
+          doctor: doctor,
+          date: moment(date).format("DD.MM.YYYY"),
+          complaint: complaint,
+        },
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            Authorization: localStorage.getItem("token"),
           },
-          {
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              Authorization: localStorage.getItem("token"),
-            },
-          }
-        )
-        .then((result) => {
-          setNotes([...result.data.data]);
-        });
-    }
+        }
+      )
+      .then((result) => {
+        setNotes([...result.data.data]);
+      });
   };
 
   const handleDateChange = (date) => {
@@ -87,7 +83,6 @@ const NoteBar = ({ setNotes }) => {
             inputVariant="outlined"
             className="text-field"
             value={date}
-            placeholder={new Date()}
             onChange={(date) => handleDateChange(date)}
             minDate={new Date()}
             format="dd.MM.yyyy"

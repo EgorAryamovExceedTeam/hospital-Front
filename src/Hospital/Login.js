@@ -29,8 +29,8 @@ const Login = () => {
             // redirect to home page
             history.push("/home");
           });
-      } catch (e) {
-        const answer = window.confirm(e.response.data.message);
+      } catch (err) {
+        const answer = window.confirm(err.response.data.message);
         if (answer) {
           // redirect to registration page
           history.push("/auth/registration");

@@ -13,7 +13,7 @@ function App() {
         <Route path="/auth/registration" render={() => <Registration />} />
         <Route path="/auth/login" render={() => <Login />} />
         <Route
-          path={"/home"}
+          path="/home"
           render={() =>
             localStorage.getItem("token") ? (
               <Home />
@@ -22,6 +22,7 @@ function App() {
             )
           }
         />
+
         <Redirect from="/" to="/auth/login" />
       </Switch>
     </div>
