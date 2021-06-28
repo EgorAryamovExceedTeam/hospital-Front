@@ -9,7 +9,7 @@ const SortNotes = ({ notes, setNotes }) => {
   const allNotes = [...notes];
 
   useEffect(() => {
-    setIsSelected(selector);
+    setIsSelected(selector ? true : false);
   }, [selector]);
 
   const sortBy = () => {
@@ -68,8 +68,20 @@ const SortNotes = ({ notes, setNotes }) => {
   useEffect(() => {
     if (isSelected) {
       sortBy();
+      switch (toUptoDown) {
+        case "По Возрасанию": {
+          break;
+        }
+        case "По Убыванию": {
+          setNotes([...notes.reverse()])
+          break;
+        }
+        default: {
+          setNotes([...allNotes])
+        }
+      }
     }
-  }, [isSelected]);
+  }, [isSelected, toUptoDown, notes]);
 
   return (
     <div className="sort-container">
