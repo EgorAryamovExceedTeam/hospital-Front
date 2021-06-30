@@ -18,7 +18,6 @@ const NotesTable = ({ notes, setNotes }) => {
   const handlerEdit = (note) => {
     setEditStatus(true);
     setItem(note);
-    console.log(note.date);
   };
 
   const handlerDelete = (note) => {

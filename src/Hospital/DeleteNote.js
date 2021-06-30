@@ -27,7 +27,7 @@ const DeleteNote = ({
     await axios
       .delete(`http://localhost:8000/deleteNote?_id=${item._id}`, {
         headers: {
-          Authorization: localStorage.getItem("token"),
+          authorization: localStorage.getItem("token"),
         },
       })
       .then((result) => {
@@ -35,7 +35,7 @@ const DeleteNote = ({
         setDeleteStatus(false);
       })
       .catch((err) => {
-        history.push("/auth/login");
+        history.push("/");
       });
   };
   return (

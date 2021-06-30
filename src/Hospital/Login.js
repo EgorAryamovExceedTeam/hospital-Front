@@ -76,6 +76,7 @@ const Login = () => {
               type="text"
               variant="outlined"
               placegolder="login"
+              autoComplete="off"
               value={login}
               onChange={(e) => changeLogin(e)}
               error={loginErr}
@@ -89,6 +90,7 @@ const Login = () => {
               name="password"
               type="password"
               variant="outlined"
+              autoComplete="off"
               placegolder="password"
               value={password}
               onChange={(e) => changePassword(e)}

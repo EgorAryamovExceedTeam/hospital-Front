@@ -19,7 +19,6 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from "@material-ui/pickers";
-import { set } from "date-fns";
 
 const EditNode = ({ editStatus, setEditStatus, item, setItem, setNotes }) => {
   const history = useHistory();
@@ -29,17 +28,12 @@ const EditNode = ({ editStatus, setEditStatus, item, setItem, setNotes }) => {
   const [editedComplaint, setEditedComplaint] = useState(item.complaint);
   const [flag, setFlag] = useState(false);
 
-  const { _id, name, doctor, date, complaint } = item;
+  const { _id, name, doctor, date, complaint, login } = item;
 
   useEffect(() => {
     const correct = editedName && editedDoctor && editedDate && editedComplaint;
-    const isMatches =
-      editedName === name &&
-      editedDoctor === doctor &&
-      moment(editedDate).format("DD.MM.YYYY") === date &&
-      editedComplaint === complaint;
-    setFlag(correct && !isMatches);
-  }, [flag]);
+    setFlag(correct);
+  }, [editedName, editedDoctor, editedDate, editedComplaint]);
 
   const handleClose = () => {
     setEditStatus(false);
@@ -56,10 +50,11 @@ const EditNode = ({ editStatus, setEditStatus, item, setItem, setNotes }) => {
           doctor: editedDoctor,
           date: moment(editedDate).format("DD.MM.YYYY"),
           complaint: editedComplaint,
+          login: login,
         },
         {
           headers: {
-            Authorization: localStorage.getItem("token"),
+            authorization: localStorage.getItem("token"),
             "Access-Control-Allow-Origin": "*",
           },
         }
@@ -70,7 +65,7 @@ const EditNode = ({ editStatus, setEditStatus, item, setItem, setNotes }) => {
         setItem();
       })
       .catch((err) => {
-        history.push("/auth/login");
+        history.push("/");
       });
     setEditStatus(false);
     setItem();

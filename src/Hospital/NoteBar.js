@@ -33,12 +33,16 @@ const NoteBar = ({ setNotes }) => {
         {
           headers: {
             "Access-Control-Allow-Origin": "*",
-            Authorization: localStorage.getItem("token"),
+            authorization: localStorage.getItem("token"),
           },
         }
       )
       .then((result) => {
         setNotes([...result.data.data]);
+        setName();
+        setDoctor();
+        setDate();
+        setComplaint();
       });
   };
 

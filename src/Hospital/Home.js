@@ -9,19 +9,20 @@ import NotesTable from "./NotesTable";
 const Home = () => {
   const history = useHistory();
   const [notes, setNotes] = useState([]);
-  const [editing, setEditing] = useState({ open: false, note: {} });
-  const [deleting, setDeleting] = useState({ open: false, _id: "" });
 
   useEffect(() => {
     async function fetchData() {
       await axios
         .get("http://localhost:8000/", {
           headers: {
-            Authorization: `${localStorage.getItem("token")}`,
+            authorization: localStorage.getItem("token"),
           },
         })
         .then((result) => {
           setNotes([...result.data.data]);
+        })
+        .catch((err) => {
+          history.push("/");
         });
     }
     fetchData();

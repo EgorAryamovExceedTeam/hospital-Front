@@ -1,87 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { Select, MenuItem } from "@material-ui/core";
+import _ from "lodash";
+import axios from "axios";
+import { arrayIncludes } from "@material-ui/pickers/_helpers/utils";
 
 const SortNotes = ({ notes, setNotes }) => {
   const [selector, setSelector] = useState();
   const [isSelected, setIsSelected] = useState(false);
-  const [toUptoDown, setToUpToDown] = useState("");
-  console.log(notes);
-  const allNotes = [...notes];
+  const [ascDesc, setAscDesc] = useState("asc");
+
+  const bySelectorArr = [
+    { key: "", value: false },
+    { key: "Имя", value: "name" },
+    { key: "Врач", value: "doctor" },
+    { key: "Дата", value: "date" },
+    { key: "Жалобы", value: "complaint" },
+  ];
+
+  const ascOrDescArr = [
+    { key: "По Возрастанию", value: "asc" },
+    { key: "По Убыванию", value: "desc" },
+  ];
 
   useEffect(() => {
-    setIsSelected(selector ? true : false);
+    setIsSelected(!!selector);
   }, [selector]);
 
-  const sortBy = () => {
-    if (selector) {
-      const allTasks = [...notes];
-      switch (selector) {
-        case "Имя": {
-          allTasks.sort((thisTask, nextTask) => {
-            if (thisTask.name > nextTask.name) return 1;
-            if (thisTask.name === nextTask.name) return 0;
-            if (thisTask.name < nextTask.name) return -1;
-            setNotes([...allTasks]);
-          });
+  const fetchData = async () => {
+    const response = await axios.get("http://localhost:8000/", {
+      headers: {
+        authorization: localStorage.getItem("token"),
+      },
+    });
+    const result = await response.data.data;
+    setNotes(result);
+  };
 
-          break;
-        }
-        case "Врач": {
-          allTasks.sort((thisTask, nextTask) => {
-            if (thisTask.doctor > nextTask.doctor) return 1;
-            if (thisTask.doctor === nextTask.doctor) return 0;
-            if (thisTask.doctor < nextTask.doctor) return -1;
-            setNotes([...allTasks]);
-          });
-          break;
-        }
-        case "Дата": {
-          allTasks.sort((thisTask, nextTask) => {
-            let thisDate = +thisTask.thisDate;
-            let nextDate = +nextTask.date;
-
-            if (thisDate > nextDate) return 1;
-            if (thisDate === nextDate) return 0;
-            if (thisDate < nextDate) return -1;
-            setNotes([...allTasks]);
-          });
-          break;
-        }
-        case "Жалобы": {
-          allTasks.sort((thisTask, nextTask) => {
-            if (thisTask.complaint > nextTask.complaint) return 1;
-            if (thisTask.complaint === nextTask.complaint) return 0;
-            if (thisTask.complaint < nextTask.complaint) return -1;
-            setNotes([...allTasks]);
-          });
-          break;
-        }
-        default: {
-          return 0;
-        }
-      }
-    } else {
-      setNotes([...allNotes]);
+  const handleSort = (e) => {
+    setSelector(e.target.value);
+    if (e.target.value) {
+      const arr = _.sortBy([...notes], (note) => note[e.target.value]);
+      setNotes([...arr]);
+    } else if (e.target.value) {
+      fetchData();
+      setAscDesc(false);
     }
   };
 
-  useEffect(() => {
-    if (isSelected) {
-      sortBy();
-      switch (toUptoDown) {
-        case "По Возрасанию": {
-          break;
-        }
-        case "По Убыванию": {
-          setNotes([...notes.reverse()])
-          break;
-        }
-        default: {
-          setNotes([...allNotes])
-        }
-      }
+  const handleAscDesc = (e) => {
+    setAscDesc(e.target.value);
+    console.log(ascDesc);
+    console.log(selector);
+    const arr = _.sortBy([...notes], (note) => note[selector]);
+    if (ascDesc === "asc") {
+      setNotes([...arr]);
+    } else {
+      setNotes([...[...notes].reverse()]);
     }
-  }, [isSelected, toUptoDown, notes]);
+  };
 
   return (
     <div className="sort-container">
@@ -89,23 +65,29 @@ const SortNotes = ({ notes, setNotes }) => {
       <Select
         variant="outlined"
         value={selector}
-        onChange={(e) => setSelector(e.target.value)}
+        onChange={(e) => handleSort(e)}
       >
-        <MenuItem value="" />
-        <MenuItem value="Имя">Имя</MenuItem>
-        <MenuItem value="Врач">Врач</MenuItem>
-        <MenuItem value="Дата">Дата</MenuItem>
-        <MenuItem value="Жалобы">Жалобы</MenuItem>
+        {bySelectorArr.map((item, index) => {
+          return (
+            <MenuItem value={item.value} key={index}>
+              {item.key}
+            </MenuItem>
+          );
+        })}
       </Select>
       {isSelected && (
         <Select
           variant="outlined"
-          value={toUptoDown}
-          onChange={(e) => setToUpToDown(e.target.value)}
+          value={ascDesc}
+          onChange={(e) => handleAscDesc(e)}
         >
-          <MenuItem value="" />
-          <MenuItem value="По Возрастанию">По возрастанию</MenuItem>
-          <MenuItem value="По Убыванию">По убыванию</MenuItem>
+          {ascOrDescArr.map((item, index) => {
+            return (
+              <MenuItem value={item.value} key={index}>
+                {item.key}
+              </MenuItem>
+            );
+          })}
         </Select>
       )}
     </div>
