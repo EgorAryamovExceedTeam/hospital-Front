@@ -1,16 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { Select, MenuItem } from "@material-ui/core";
+import React, { useState } from "react";
+import { Select, MenuItem, Button, IconButton } from "@material-ui/core";
+import IconDelete from "@material-ui/icons/Delete";
 import _ from "lodash";
 import axios from "axios";
-import { arrayIncludes } from "@material-ui/pickers/_helpers/utils";
+import "date-fns";
+import moment from "moment";
+import DateFnsUtils from "@date-io/date-fns";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
 
 const SortNotes = ({ notes, setNotes }) => {
   const [selector, setSelector] = useState();
   const [isSelected, setIsSelected] = useState(false);
-  const [ascDesc, setAscDesc] = useState("asc");
+  const [ascendingDescending, setAscendingDescending] = useState("asc");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState();
+  const [dateTo, setDateTo] = useState();
 
   const bySelectorArr = [
-    { key: "", value: false },
+    { key: "None", value: false },
     { key: "Имя", value: "name" },
     { key: "Врач", value: "doctor" },
     { key: "Дата", value: "date" },
@@ -22,10 +32,7 @@ const SortNotes = ({ notes, setNotes }) => {
     { key: "По Убыванию", value: "desc" },
   ];
 
-  useEffect(() => {
-    setIsSelected(!!selector);
-  }, [selector]);
-
+  // requiest for take all notes from DB
   const fetchData = async () => {
     const response = await axios.get("http://localhost:8000/", {
       headers: {
@@ -36,52 +43,82 @@ const SortNotes = ({ notes, setNotes }) => {
     setNotes(result);
   };
 
+  // sort note's list by fields: name or doctor or date or complaint
   const handleSort = (e) => {
     setSelector(e.target.value);
+    setIsSelected(!!e.target.value);
     if (e.target.value) {
       const arr = _.sortBy([...notes], (note) => note[e.target.value]);
       setNotes([...arr]);
     } else if (e.target.value) {
       fetchData();
-      setAscDesc(false);
+      setAscendingDescending(false);
     }
   };
-
+  // sort note's list by Ascending or Descending
   const handleAscDesc = (e) => {
-    setAscDesc(e.target.value);
-    console.log(ascDesc);
-    console.log(selector);
+    setAscendingDescending(e.target.value);
     const arr = _.sortBy([...notes], (note) => note[selector]);
-    if (ascDesc === "asc") {
+    if (e.target.value === "asc") {
       setNotes([...arr]);
     } else {
       setNotes([...[...notes].reverse()]);
     }
   };
 
+  const filterList = () => {
+    let notesArr = [...notes];
+    let needsNotesArr = [];
+    // There is testing have we got values in filters fields
+    // if all fields have values filter note's list by them
+    if (dateFrom && dateTo) {
+      notesArr.forEach((item) => {
+        const itemDate = new Date(item.date.split(".").reverse().join("-"));
+        if (itemDate >= dateFrom && itemDate <= dateTo)
+          needsNotesArr.push(item);
+      });
+
+      setNotes([...needsNotesArr]);
+    }
+    // if only first field has value filter note's list by it
+    else if (dateFrom) {
+      notesArr.forEach((item) => {
+        const itemDate = new Date(item.date.split(".").reverse().join("-"));
+        if (itemDate >= dateFrom) needsNotesArr.push(item);
+      });
+      setNotes([...needsNotesArr]);
+    }
+    // if only second field has value filter note's list by it
+    else if (dateTo) {
+      notesArr.forEach((item) => {
+        const itemDate = new Date(item.date.split(".").reverse().join("-"));
+        if (itemDate <= dateTo) needsNotesArr.push(item);
+      });
+      setNotes([...needsNotesArr]);
+    }
+    //  if all fields hasn't got values send request for take all task from DB
+    else {
+      fetchData();
+    }
+  };
+
+  const closeFilters = () => {
+    setDateFrom();
+    setDateTo();
+    fetchData();
+    setIsFilterOpen(false);
+  };
+
   return (
     <div className="sort-container">
-      <label>Сортировать по:</label>
-      <Select
-        variant="outlined"
-        value={selector}
-        onChange={(e) => handleSort(e)}
-      >
-        {bySelectorArr.map((item, index) => {
-          return (
-            <MenuItem value={item.value} key={index}>
-              {item.key}
-            </MenuItem>
-          );
-        })}
-      </Select>
-      {isSelected && (
+      <div className="sort-by">
+        <label>Сортировать по:</label>
         <Select
           variant="outlined"
-          value={ascDesc}
-          onChange={(e) => handleAscDesc(e)}
+          value={selector}
+          onChange={(e) => handleSort(e)}
         >
-          {ascOrDescArr.map((item, index) => {
+          {bySelectorArr.map((item, index) => {
             return (
               <MenuItem value={item.value} key={index}>
                 {item.key}
@@ -89,6 +126,63 @@ const SortNotes = ({ notes, setNotes }) => {
             );
           })}
         </Select>
+        {isSelected && (
+          <Select
+            variant="outlined"
+            value={ascendingDescending}
+            onChange={(e) => handleAscDesc(e)}
+          >
+            {ascOrDescArr.map((item, index) => {
+              return (
+                <MenuItem value={item.value} key={index}>
+                  {item.key}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        )}
+      </div>
+      <label>Добавить фильтрацию по дате: </label>
+      <Button
+        onClick={() => setIsFilterOpen(true)}
+        variant="outlined"
+        className="open-filters"
+      >
+        Open
+      </Button>
+      {isFilterOpen && (
+        <div className="filter-by-date">
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <label className="date-from-label">С:</label>
+            <KeyboardDatePicker
+              inputVariant="outlined"
+              className="date-field"
+              value={dateFrom}
+              onChange={(date) => setDateFrom(date)}
+              format="dd.MM.yyyy"
+              mask={"__.__.____"}
+            />
+            <label>По:</label>
+            <KeyboardDatePicker
+              inputVariant="outlined"
+              className="date-field"
+              value={dateTo}
+              onChange={(date) => setDateTo(date)}
+              format="dd.MM.yyyy"
+              mask={"__.__.____"}
+            />
+          </MuiPickersUtilsProvider>
+          <Button className="filter" onClick={() => filterList()}>
+            Фильтровать
+          </Button>
+          <IconButton
+            aria-label="delete"
+            className="delete-filter"
+            onClick={() => closeFilters()}
+          >
+            <IconDelete />
+          </IconButton>
+        </div>
       )}
     </div>
   );
