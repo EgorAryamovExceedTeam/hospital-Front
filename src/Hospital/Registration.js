@@ -29,7 +29,7 @@ const Registration = () => {
           })
           .then((result) => {
             localStorage.clear();
-            localStorage.setItem("taken", JSON.stringify(result.data.token));
+            localStorage.setItem("token", JSON.stringify(result.data.token));
             // redirect to home page
             history.push("/home");
           });

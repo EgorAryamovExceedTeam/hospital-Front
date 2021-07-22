@@ -12,7 +12,6 @@ const Login = () => {
   const [passwordErr, setPasswordErr] = useState(false);
 
   const handlerSubmit = async (e) => {
-    console.log("something");
     e.preventDefault();
     const formData = new FormData(e.target);
     // test states before send data
@@ -26,13 +25,12 @@ const Login = () => {
             password: formData.get("password"),
           })
           .then((result) => {
-            localStorage.clear();
-            localStorage.setItem("taken", JSON.stringify(result.data.token));
+            localStorage.setItem("token", result.data.token);
             // redirect to home page
             history.push("/home");
           });
-      } catch (e) {
-        const answer = window.confirm(e.response.data.message);
+      } catch (err) {
+        const answer = window.confirm(err.response.data.message);
         if (answer) {
           // redirect to registration page
           history.push("/auth/registration");
@@ -78,6 +76,7 @@ const Login = () => {
               type="text"
               variant="outlined"
               placegolder="login"
+              autoComplete="off"
               value={login}
               onChange={(e) => changeLogin(e)}
               error={loginErr}
@@ -91,6 +90,7 @@ const Login = () => {
               name="password"
               type="password"
               variant="outlined"
+              autoComplete="off"
               placegolder="password"
               value={password}
               onChange={(e) => changePassword(e)}

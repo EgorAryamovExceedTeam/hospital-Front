@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, Link, Redirect } from "react-router-dom";
 import "./App.css";
 import Registration from "./Hospital/Registration";
@@ -9,9 +10,20 @@ function App() {
     <div className="App">
       <header></header>
       <Switch>
-        <Route path="/auth/registration" component={Registration} />
-        <Route path="/auth/login" component={Login} />
-        <Route path="/home" component={Home} />
+        <Route path="/auth/registration" render={() => <Registration />} />
+        <Route path="/auth/login" render={() => <Login />} />
+        <Route
+          path="/home"
+          render={() =>
+            localStorage.getItem("token") ? (
+              <Home />
+            ) : (
+              <Redirect to="/auth/login" />
+            )
+          }
+        />
+
+        <Redirect from="/" to="/auth/login" />
       </Switch>
     </div>
   );
